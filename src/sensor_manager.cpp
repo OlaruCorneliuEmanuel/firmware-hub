@@ -8,6 +8,10 @@
 static Adafruit_INA219 ina219;
 static bool inaOk = false;
 
+//FILTRE EMA
+static float filteredTemp = 21.0;
+const float TEMP_ALFA = 0.05;
+
 void sensorsInit() {
   inaOk = false;
 
@@ -31,8 +35,27 @@ void sensorsInit() {
 }
 
 void sensorsUpdate() {
+
+    TelemetryState& t = getTelemetryState();
+    ComponentState& ntc = getNtcState();
+
+    // --- Citire NTC ---
+    int raw = analogRead(NTC_PIN);
+    if (raw > 0 && raw < 4095) {
+        float resistance = NTC_R_FIXED / (4095.0 / (float)raw - 1.0);
+        float steinhart = log(resistance / NTC_R_NOMINAL) / NTC_B_COEF;
+        steinhart += 1.0 / (NTC_T_NOMINAL + 273.15);
+        float currentTemp = (1.0 / steinhart) - 273.15;
+
+        // Aplicăm filtrul Alfa (EMA)
+        filteredTemp = (TEMP_ALFA * currentTemp) + (1.0 - TEMP_ALFA) * filteredTemp;
+        t.temperatureC = filteredTemp;
+        ntc.status = "online"; [cite: 141, 149]
+    }
+    
   TelemetryState& t = getTelemetryState();
   ComponentState& ina = getIna219State();
+
 
   if (!inaOk) {
     ina.status = "offline";
