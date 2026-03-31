@@ -249,41 +249,33 @@ void oledUpdate() {
       break;
     }
 
-    case 4: { // MODULE
-      display.setCursor(34, 12);
-      display.print("MODULE");
-      display.drawFastHLine(0, 22, 128, WHITE);
+          case 4: { // MODULE
+        display.setCursor(34, 12);
+        display.print("MODULE");
+        display.drawFastHLine(0, 22, 128, WHITE);
 
-      display.setCursor(0, 30);
-      display.print("HUB: ");
-      display.println("online");
+        display.setCursor(0, 30);
+        display.print("HUB: ");
+        display.println("online");
 
-      display.print("MOTION: ");
-      display.println(MODULE_MOTION_DEVICE_PRESENT ? "online" : "offline");
+        display.print("MOTION: ");
+        display.println(MODULE_MOTION_DEVICE_PRESENT ? "online" : "offline");
 
-      display.print("INA219: ");
-      display.println(ina.status);
+        display.print("INA219: ");
+        display.println(ina.status);
 
-      display.print("NTC: ");
-      display.println(ntc.status);
+        display.print("NTC: ");
+        display.println(ntc.status);
 
-      display.setCursor(64, 30);
-      display.print("OLED: ");
-      display.println(oledComp.status);
+        display.setCursor(64, 30);
+        display.print("BMI: ");
+        display.println(bmi.status);
 
-      display.setCursor(64, 40);
-      display.print("WIFI: ");
-      display.println(wifi.status);
-
-      display.setCursor(64, 50);
-      display.print("BMI: ");
-      display.println(bmi.status);
-
-      display.setCursor(64, 60);
-      display.print("RTC: ");
-      display.println(rtc.status);
-      break;
-    }
+        display.setCursor(64, 40);
+        display.print("RTC: ");
+        display.println(rtc.status);
+        break;
+      }
 
     default: {
       display.setCursor(0, 20);
