@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <WebSocketsServer.h>
 #include "wifi_manager.h"
 #include "api_server.h"
 #include "system_state.h"
@@ -10,6 +11,11 @@ static unsigned long sensorTimer = 0;
 static unsigned long clientTimer = 0;
 static unsigned long cpuTimer = 0;
 static unsigned long busyAccum = 0;
+
+WebSocketsServer webSocket(81);
+
+// Temporizator dedicat pentru expedierea datelor WebSockets
+static unsigned long wsTimer = 0;
 
 void setup() {
     Serial.begin(115200);
@@ -24,6 +30,7 @@ void setup() {
     sensorsInit();
 
     oledRequestRefresh();
+    webSocket.begin();
     apiServerInit();
 
     addLog("System state initialized");
@@ -38,11 +45,22 @@ void loop() {
     unsigned long loopStart = micros();
     unsigned long nowMs = millis();
 
+    webSocket.loop();
     apiServerHandle();
     buttonsUpdate();
 
     // Actualizare ultrarapidă pentru accelerometru și giroscop
     sensorsUpdateFast();
+
+    if (nowMs - wsTimer >= 30) {
+        // Preluăm variabilele externe din sensor_manager.h și creăm un JSON minimal
+        String wsJson = "{\"roll\":" + String(roll, 2) + ",\"pitch\":" + String(pitch, 2) + "}";
+        
+        // Trimitem string-ul JSON către toți clienții conectați pe portul 81
+        webSocket.broadcastTXT(wsJson);
+        
+        wsTimer = nowMs;
+    }
 
     // Actualizare lentă (doar 1 dată pe secundă) pt NTC/INA219
     if (nowMs - sensorTimer >= 1000) {
